@@ -5,7 +5,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebas
     // Firebase web configuration for the existing Smart Mining Helmet project.
     // The API key identifies the Firebase project; Firebase Authentication and RTDB rules protect data.
     const firebaseConfig = {
-      apiKey: 'AIzaSyDTkhR31FbLB1TU3PmZ9s0oIrKFIMPQsZ8',
+      apiKey: 'api_key',
       authDomain: 'mining-helmet-13d03.firebaseapp.com',
       databaseURL: 'https://mining-helmet-13d03-default-rtdb.asia-southeast1.firebasedatabase.app',
       projectId: 'mining-helmet-13d03'
