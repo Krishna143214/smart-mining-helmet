@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>MineWatch | Smart Mining Helmet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="login-layer" id="loginLayer">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M4 14a8 8 0 0 1 16 0v2H4v-2Z" stroke="currentColor" stroke-width="2"/><path d="M3 16h18v3H3zM12 6V3M8 7l-2-2m10 2 2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div><div class="brand-name">MINEWATCH</div><div class="brand-sub">SMART MINING HELMET</div></div>
+      </div>
+      <h2>Sign in to your dashboard</h2>
+      <p>Authenticate with the Email/Password account created in your Smart Mining Helmet Firebase project.</p>
+      <form id="loginForm">
+        <div class="field"><label for="email">FIREBASE EMAIL</label><input id="email" type="email" autocomplete="username" placeholder="Enter Firebase email" required /></div>
+        <div class="field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Enter Firebase password" required /></div>
+        <button class="btn primary" id="loginButton" type="submit">Connect to dashboard</button>
+        <div class="login-error" id="loginError" role="alert"></div>
+      </form>
+      <div class="login-note">Your password is entered only here and is not stored in this HTML file. Firebase Authentication controls database access.</div>
+    </div>
+  </div>
+
+  <main class="shell" id="appShell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M4 14a8 8 0 0 1 16 0v2H4v-2Z" stroke="currentColor" stroke-width="2"/><path d="M3 16h18v3H3zM12 6V3M8 7l-2-2m10 2 2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div><div class="brand-name">MINEWATCH</div><div class="brand-sub">SMART MINING HELMET</div></div>
+      </div>
+      <div class="top-actions">
+        <div class="pill"><span class="dot" id="firebaseDot"></span><span id="firebaseStatus">Firebase connecting</span></div>
+        <div class="pill"><span class="dot" id="deviceDot"></span><span id="deviceStatus">Device unknown</span></div>
+        <div class="pill user-pill" id="userEmail">Authenticated</div>
+        <button class="btn" id="logoutButton" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <div><div class="eyebrow">Operations / Live monitoring</div><h1>Helmet overview</h1><div class="subheading">Real-time environmental telemetry, safety alerts and device location.</div></div>
+      <div class="sync-note">LAST UPDATE<br><span id="lastUpdate">Waiting for device data</span></div>
+    </section>
+
+    <section class="grid metrics">
+      <article class="panel metric">
+        <div class="metric-head"><span>GAS SENSOR</span><span class="metric-icon">◉</span></div>
+        <div class="metric-value" id="gasValue">-- <span class="metric-unit">ADC</span></div>
+        <div class="metric-foot"><span class="dot" id="gasDot"></span><span id="gasHint">Waiting for reading</span></div>
+        <div class="meter"><span id="gasMeter"></span></div>
+      </article>
+      <article class="panel metric">
+        <div class="metric-head"><span>TEMPERATURE</span><span class="metric-icon">♨</span></div>
+        <div class="metric-value" id="tempValue">-- <span class="metric-unit">°C</span></div>
+        <div class="metric-foot"><span class="dot" id="tempDot"></span><span id="tempHint">DHT11 · waiting</span></div>
+        <div class="meter"><span id="tempMeter"></span></div>
+      </article>
+      <article class="panel metric">
+        <div class="metric-head"><span>HUMIDITY</span><span class="metric-icon">◌</span></div>
+        <div class="metric-value" id="humidityValue">-- <span class="metric-unit">%</span></div>
+        <div class="metric-foot"><span class="dot" id="humidityDot"></span><span id="humidityHint">DHT11 · waiting</span></div>
+        <div class="meter"><span id="humidityMeter"></span></div>
+      </article>
+      <article class="panel metric">
+        <div class="metric-head"><span>GPS SATELLITES</span><span class="metric-icon">⌖</span></div>
+        <div class="metric-value" id="satelliteValue">-- <span class="metric-unit">SAT</span></div>
+        <div class="metric-foot"><span class="dot" id="gpsDot"></span><span id="gpsHint">Waiting for GPS fix</span></div>
+        <div class="meter"><span id="gpsMeter"></span></div>
+      </article>
+    </section>
+
+    <section class="grid main-grid">
+      <article class="panel">
+        <div class="panel-head"><div><div class="panel-title">Device location</div><div class="panel-kicker">NEO-6M GPS · live coordinates</div></div><span class="state" id="gpsState">NO FIX</span></div>
+        <div class="panel-body">
+          <div class="map-wrap"><div id="map"></div><div class="map-overlay" id="mapOverlay">Waiting for valid GPS coordinates</div></div>
+          <div class="gps-readout">
+            <div class="mini-stat"><div class="mini-label">Latitude</div><div class="mini-value" id="latitude">--</div></div>
+            <div class="mini-stat"><div class="mini-label">Longitude</div><div class="mini-value" id="longitude">--</div></div>
+            <div class="mini-stat"><div class="mini-label">Altitude</div><div class="mini-value" id="altitude">-- m</div></div>
+            <div class="mini-stat"><div class="mini-label">Speed</div><div class="mini-value" id="speed">-- km/h</div></div>
+            <div class="mini-stat"><div class="mini-label">Satellites</div><div class="mini-value" id="satellites">--</div></div>
+            <div class="mini-stat"><div class="mini-label">HDOP</div><div class="mini-value" id="hdop">--</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel status-card">
+        <div class="panel-title">Safety & controls</div>
+        <div class="panel-kicker">Automatic alerts and remote buzzer</div>
+        <div class="status-banner">
+          <div class="status-symbol" id="statusSymbol">✓</div>
+          <div><div class="status-main" id="overallStatus">Awaiting telemetry</div><div class="status-detail" id="overallDetail">Safety state will appear when data arrives.</div></div>
+        </div>
+        <div class="alert-list">
+          <div class="alert-row"><span class="alert-name">Gas threshold (&gt; 400 ADC)</span><span class="state" id="gasAlertState">NORMAL</span></div>
+          <div class="alert-row"><span class="alert-name">High temperature (&gt; 35 °C)</span><span class="state" id="tempAlertState">NORMAL</span></div>
+          <div class="alert-row"><span class="alert-name">Automatic safety buzzer · D4</span><span class="state" id="autoBuzzerState">OFF</span></div>
+        </div>
+        <div class="control-card">
+          <div class="control-top">
+            <div><div class="control-label">Dashboard buzzer · D3</div><div class="control-help" id="buzzerHelp">Remote command is read by the helmet every ~3 seconds.</div></div>
+            <label class="switch" aria-label="Dashboard buzzer toggle"><input id="buzzerToggle" type="checkbox" disabled><span class="slider"></span></label>
+          </div>
+          <div class="control-help" id="buzzerStateText" style="margin-top:10px">Connect and wait for Firebase.</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid charts">
+      <article class="panel chart-panel"><div class="chart-top"><div><div class="chart-title">Gas level</div><div class="chart-unit">Raw ADC · 0–1023</div></div><span class="state">LIVE HISTORY</span></div><div class="chart-box"><canvas id="gasChart"></canvas></div></article>
+      <article class="panel chart-panel"><div class="chart-top"><div><div class="chart-title">Temperature</div><div class="chart-unit">Degrees Celsius</div></div><span class="state">LIVE HISTORY</span></div><div class="chart-box"><canvas id="tempChart"></canvas></div></article>
+      <article class="panel chart-panel"><div class="chart-top"><div><div class="chart-title">Humidity</div><div class="chart-unit">Relative humidity · %</div></div><span class="state">LIVE HISTORY</span></div><div class="chart-box"><canvas id="humidityChart"></canvas></div></article>
+    </section>
+
+    <section class="panel history">
+      <div class="panel-head"><div><div class="panel-title">Recent telemetry</div><div class="panel-kicker">Latest records from MiningHelmet/history</div></div><div class="history-tools"><span class="pill" id="historyCount">0 records</span><button class="btn" id="exportButton" type="button">Export CSV</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Gas ADC</th><th>Temp °C</th><th>Humidity %</th><th>GPS fix</th><th>Safety state</th></tr></thead><tbody id="historyRows"><tr><td colspan="6" class="empty">Waiting for historical readings…</td></tr></tbody></table></div>
+    </section>
+
+    <div class="footer">MINEWATCH · SMART MINING HELMET · DATA PROVIDED BY YOUR ESP8266 DEVICE</div>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
